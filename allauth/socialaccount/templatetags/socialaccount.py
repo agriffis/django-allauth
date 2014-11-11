@@ -21,7 +21,6 @@ class ProviderLoginURLNode(template.Node):
                 query[key] = request.REQUEST.get(key)
             if not query[key]:
                 del query[key]
-        print query
         return provider.get_login_url(request, **query)
 
 @register.tag
