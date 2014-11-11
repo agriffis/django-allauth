@@ -16,13 +16,12 @@ class ProviderLoginURLNode(template.Node):
         query = dict([(str(name), var.resolve(context)) for name, var
                       in self.params.items()])
         request = context['request']
-        if 'next' not in query:
-            next = request.REQUEST.get('next')
-            if next:
-                query['next'] = next
-        else:
-            if not query['next']:
-                del query['next']
+        for key in ['next', 'scope']:
+            if not query.get(key):
+                query[key] = request.REQUEST.get(key)
+            if not query[key]:
+                del query[key]
+        print query
         return provider.get_login_url(request, **query)
 
 @register.tag

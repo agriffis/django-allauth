@@ -64,6 +64,9 @@ class OAuth2LoginView(OAuth2View):
         action = request.GET.get('action', AuthAction.AUTHENTICATE)
         auth_url = self.adapter.authorize_url
         auth_params = provider.get_auth_params(request, action)
+        scope = request.GET.get('scope')
+        if scope:
+            auth_params['scope'] = scope
         client.state = SocialLogin.stash_state(request)
         try:
             return HttpResponseRedirect(client.get_redirect_url(auth_url, 
