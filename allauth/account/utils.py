@@ -8,6 +8,11 @@ except ImportError:
     from datetime import datetime
     now = datetime.now
 
+try:
+    from urllib.parse import urlparse, urlunparse
+except ImportError:
+    from urlparse import urlparse, urlunparse
+
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
@@ -36,10 +41,15 @@ def get_next_redirect_url(request, redirect_field_name="next"):
     Returns the next URL to redirect to, if it was explicitly passed
     via the request.
     """
-    redirect_to = request.REQUEST.get(redirect_field_name)
-    # light security check -- make sure redirect_to isn't garabage.
-    if not redirect_to or "://" in redirect_to or " " in redirect_to:
-        redirect_to = None
+    redirect_to = request.REQUEST.get(redirect_field_name) or None
+
+    # Light security check -- make sure redirect_to isn't garabage
+    # after trimming the query string and fragment.
+    if redirect_to:
+        redirect_to_check = urlunparse(urlparse(redirect_to)[:4] + ('', ''))
+        if any(x in redirect_to_check for x in ['://', ' ']):
+               redirect_to = None
+
     return redirect_to
 
 
