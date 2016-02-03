@@ -65,8 +65,15 @@ class SocialApp(models.Model):
         return self.name
 
 
+class SocialAccountManager(models.Manager):
+    def get_by_natural_key(self, provider, uid):
+        return self.get(provider=provider, uid=uid)
+
+
 @python_2_unicode_compatible
 class SocialAccount(models.Model):
+    objects = SocialAccountManager()
+
     user = models.ForeignKey(allauth.app_settings.USER_MODEL)
     provider = models.CharField(verbose_name=_('provider'),
                                 max_length=30,
@@ -100,6 +107,9 @@ class SocialAccount(models.Model):
         verbose_name = _('social account')
         verbose_name_plural = _('social accounts')
 
+    def natural_key(self):
+        return (self.provider, self.uid)
+
     def authenticate(self):
         return authenticate(account=self)
 
@@ -119,8 +129,15 @@ class SocialAccount(models.Model):
         return self.get_provider().wrap_account(self)
 
 
+class SocialTokenManager(models.Manager):
+    def get_by_natural_key(self, app, account):
+        return self.get(app=app, account=account)
+
+
 @python_2_unicode_compatible
 class SocialToken(models.Model):
+    objects = SocialTokenManager()
+
     app = models.ForeignKey(SocialApp)
     account = models.ForeignKey(SocialAccount)
     token = models.TextField(
@@ -139,6 +156,9 @@ class SocialToken(models.Model):
         unique_together = ('app', 'account')
         verbose_name = _('social application token')
         verbose_name_plural = _('social application tokens')
+
+    def natural_key(self):
+        return (self.app, self.account)
 
     def __str__(self):
         return self.token
